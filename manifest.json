@@ -1,11 +1,11 @@
 {
-	"id": "obsidian-sample-plugin",
-	"name": "Sample Plugin",
+	"id": "obsidian-simply-spaced",
+	"name": "Simply spaced",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "Spaced repetiotion based on SM-2 with extra randomization in intervals. Git friendly progress tracking.",
+	"author": "Andrew Romanenco",
+	"authorUrl": "https://github.com/andrewromanenco/obsidian-simply-spaced",
+	"fundingUrl": "https://github.com/andrewromanenco/obsidian-simply-spaced",
 	"isDesktopOnly": false
 }
