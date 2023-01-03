@@ -1,4 +1,4 @@
-# Obsidian simple spaced repetition
+# Obsidian simple spaced repetition (BETA)
 This Obsidian (https://obsidian.md) plugin implements a spaced repetition algorithm on top of all notes in an Obsidian vault.
 
 This is an plugin written to address a very specific use case:
