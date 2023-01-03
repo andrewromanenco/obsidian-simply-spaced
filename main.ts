@@ -22,6 +22,7 @@ class QnAModal extends Modal {
 	private parentComponent: Component;
 	private vault: Vault;
 	private learningSession: LearningSession;
+	private cardsDB: CardsDB;
 
 	private root: HTMLDivElement;
 
@@ -32,10 +33,10 @@ class QnAModal extends Modal {
 	}
 
 	async onOpen() {
-		const cardsDB = new CardsDB(this.vault);
-		await cardsDB.load();
+		this.cardsDB = new CardsDB(this.vault);
+		await this.cardsDB.load();
 		const allMDs = this.vault.getMarkdownFiles();
-		this.learningSession = new LearningSession(cardsDB, allMDs);
+		this.learningSession = new LearningSession(this.cardsDB, allMDs);
 
 		const {contentEl} = this;
 		this.titleEl.innerHTML += "<h4>Simply spaced</h4>";
@@ -141,5 +142,7 @@ class QnAModal extends Modal {
 	async onClose() {
 		const {contentEl} = this;
 		contentEl.empty();
+
+		await this.cardsDB.compactDB(this.vault.getMarkdownFiles().map(f => f.path));
 	}
 }

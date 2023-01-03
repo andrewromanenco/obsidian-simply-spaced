@@ -1,4 +1,5 @@
 import { TFile, Vault} from 'obsidian';
+import {optimizeDB} from './db-optimizer'
 
 export interface CardsStorage {
     isIgnored(path: string): boolean;
@@ -17,6 +18,7 @@ export interface Card {
 }
 
 const LOG_FILE_NAME = 'simply-spaced.log';
+const NEW_LOG_FILE_NAME = 'simply-spaced.tmp';
 
 export class CardsDB {
 
@@ -132,6 +134,24 @@ export class CardsDB {
 
     public isIgnored(path: string): boolean {
         return this.ignoredCards.has(path);
+    }
+
+    public async compactDB(existingPaths: string[]): Promise<void> {
+        const log = await this.vault.read(this.logFile);
+        const compactedLog = optimizeDB(log, existingPaths);
+        await this.deleteTemp();
+        const newLog = await this.vault.create(NEW_LOG_FILE_NAME, '');
+        await this.vault.append(newLog, compactedLog);
+        await this.vault.delete(this.logFile, true);
+        await this.vault.rename(newLog, LOG_FILE_NAME)
+    }
+
+    private async deleteTemp(): Promise<void> {
+        await this.vault.getFiles().forEach(async (f) =>  {
+            if (f.path === NEW_LOG_FILE_NAME) {
+                await this.vault.delete(f, true);
+            }
+        });
     }
 
 }
