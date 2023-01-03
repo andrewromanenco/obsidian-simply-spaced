@@ -34,15 +34,13 @@ export class CardsDB {
 
 	public async load(): Promise<void> {
 		const allFiles = this.vault.getFiles();
-		let log: TFile|undefined = allFiles.find(f => f.path == LOG_FILE_NAME);
-		if (log) {
-			this.logFile = log;
+        const log = this.vault.getAbstractFileByPath(LOG_FILE_NAME);
+		if (log instanceof TFile) {
+			this.logFile = log!;
 		} else {
 			this.logFile = await this.vault.create(LOG_FILE_NAME, "");
 		}
 		await this.parseDB();
-        // TODO compact database if needed
-        // consider adding first line of the db as a timestamp of file creation
 	}
 
 	private async parseDB(): Promise<void> {
@@ -147,11 +145,10 @@ export class CardsDB {
     }
 
     private async deleteTemp(): Promise<void> {
-        await this.vault.getFiles().forEach(async (f) =>  {
-            if (f.path === NEW_LOG_FILE_NAME) {
-                await this.vault.delete(f, true);
-            }
-        });
+        const tmp = this.vault.getAbstractFileByPath(NEW_LOG_FILE_NAME);
+		if (tmp instanceof TFile) {
+            await this.vault.delete(tmp, true);
+        };
     }
 
 }
