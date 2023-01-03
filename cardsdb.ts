@@ -8,7 +8,7 @@ export interface CardsStorage {
     save(card: Card): void;
 }
 
-interface Card {
+export interface Card {
     path: string,
     repetiotions: number,
     easyFactor: number,
