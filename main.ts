@@ -1,28 +1,13 @@
-import { App, Editor, MarkdownView, Modal, Notice,
-	Plugin, PluginSettingTab, Setting, MarkdownRenderer, TextComponent, Component,
-DataWriteOptions,
-TFile,
-Vault} from 'obsidian';
+import { App, Modal, Plugin, MarkdownRenderer, Component, Vault} from 'obsidian';
 
-import {CardsDB, Card} from 'cardsdb';
+import {CardsDB} from 'cardsdb';
 import {getNextInterval, Answer} from 'spacer';
 import {LearningSession} from 'learning-session';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
-}
-
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
-}
-
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class SimplySpaced extends Plugin {
 
 	async onload() {
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Simply spaced', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('align-vertical-space-between', 'Simply spaced', (evt: MouseEvent) => {
 			new QnAModal(this.app, this).open();
 		});
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
