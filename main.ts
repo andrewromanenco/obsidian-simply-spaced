@@ -93,8 +93,15 @@ class QnAModal extends Modal {
 		questionControlDiv.appendChild(showAnswerBtn);
 
 
+		const notThisSessionBtn = document.createElement("button");
+		notThisSessionBtn.setText("Not right now");
+		notThisSessionBtn.addEventListener("click", () => {
+			this.learningSession.skipCard();
+			this.doNext();
+		});
+		answerControlDiv.appendChild(notThisSessionBtn);
 		const ignoreBtn = document.createElement("button");
-		ignoreBtn.setText("Ignore");
+		ignoreBtn.setText("Ignore forever");
 		ignoreBtn.addEventListener("click", () => {
 			this.learningSession.ignoreCard();
 			this.doNext();

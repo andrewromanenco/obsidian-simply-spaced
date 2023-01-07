@@ -96,6 +96,10 @@ export class LearningSession {
         this.moveToNextCard();
     }
 
+    public skipCard(): void {
+        this.moveToNextCard();
+    }
+
     private moveToNextCard(): void {
         if (this.todayAndLateCards.length > 0) {
             this.todayAndLateCards.shift();
