@@ -91,7 +91,7 @@ function getRandomInt(max: number): number {
 
 function createDateWithInterval(intervalInDays: number): Date {
     const date = new Date();
-	date.setDate(date.getDate() + intervalInDays);
+    date.setDate(date.getDate() + intervalInDays);
     date.setHours(0, 0, 0, 0);
     return date;
 }
