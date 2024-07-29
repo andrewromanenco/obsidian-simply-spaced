@@ -20,3 +20,7 @@ Buttons:
 - Not right now: skip the card for this learning session; basically cards state won't be updated
 - Ignore forever: the card won't be shown again
 - Other buttons: reschedule the card for a shown interval
+
+Notes
+- npm run build
+- npx jest
