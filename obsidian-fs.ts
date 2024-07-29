@@ -1,4 +1,3 @@
-import { createHash } from 'crypto';
 import { CloudDrive } from 'kv-synced';
 import { App, Vault, TFolder, TFile } from 'obsidian';
 
@@ -34,6 +33,7 @@ export class ObsidianFS implements CloudDrive {
             resolve(result);
         });
     }
+
     async read(fileHandle: any): Promise<string> {
         const readValue = await this.vault.read(fileHandle as TFile);
         return new Promise<string>((resolve) => {
@@ -42,10 +42,21 @@ export class ObsidianFS implements CloudDrive {
     }
 
     async write(content: string): Promise<void> {
-        const hash = createHash('sha256');
-        hash.update(content);
-        const hex  = hash.digest('hex');
+        const hex  = await this.sha256(content);
         const fileName = `${ObsidianFS.FOLDER}/${hex}.json`;
-        await this.vault.create(fileName, content);
+        try {
+            await this.vault.create(fileName, content);
+        } catch (error) {
+            alert('Error saving updates: ' + error);
+        }
     }
+
+    private async sha256(message: string): Promise<string> {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+      }
 }
