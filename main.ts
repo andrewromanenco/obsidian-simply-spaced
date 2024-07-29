@@ -1,8 +1,10 @@
-import { App, Modal, Plugin, MarkdownRenderer, Component, Vault} from 'obsidian';
+import { App, Modal, Plugin, MarkdownRenderer, Component, Vault } from 'obsidian';
 
-import {CardsDB} from 'cardsdb';
-import {getNextInterval, Answer} from 'spacer';
-import {LearningSession} from 'learning-session';
+import { KV, LWWVersionHandler } from 'kv-synced';
+import { getNextInterval, Answer } from 'spacer';
+import { LearningSession } from 'learning-session';
+
+import { ObsidianFS } from 'obsidian-fs';
 
 export default class SimplySpaced extends Plugin {
 
@@ -22,21 +24,26 @@ class QnAModal extends Modal {
 	private parentComponent: Component;
 	private vault: Vault;
 	private learningSession: LearningSession;
-	private cardsDB: CardsDB;
+	private kvs: KV;
 
 	private root: HTMLDivElement;
+
+	private updatedCardsCount: number;
 
 	constructor(app: App, parentComponent: Component) {
 		super(app);
 		this.parentComponent = parentComponent;
 		this.vault = this.app.vault;
+		this.updatedCardsCount = 0;
 	}
 
 	async onOpen() {
-		this.cardsDB = new CardsDB(this.vault);
-		await this.cardsDB.load();
+		const fs = new ObsidianFS(this.vault);
+		await fs.init(this.app);
+		this.kvs = new KV(fs, new LWWVersionHandler());
+		await this.kvs.load();
 		const allMDs = this.vault.getMarkdownFiles();
-		this.learningSession = new LearningSession(this.cardsDB, allMDs);
+		this.learningSession = new LearningSession(this.kvs, allMDs);
 
 		const {contentEl} = this;
 		this.titleEl.innerHTML += "<h4>Simply spaced</h4>";
@@ -120,7 +127,6 @@ class QnAModal extends Modal {
 		this.createAnswerButton(answerControlDiv, Answer.CORRECT_LOTS_OF_THINKING, 'Right, lots of thinking');
 		this.createAnswerButton(answerControlDiv, Answer.GOOD_SOME_THINKING, 'Right, some hesitation');
 		this.createAnswerButton(answerControlDiv, Answer.PERFECT, 'Perfect');
-
 	}
 
 	private createAnswerButton(container: HTMLDivElement, answer: Answer, text: string): void {
@@ -138,6 +144,11 @@ class QnAModal extends Modal {
 				nextIter.repetiotions,
 				nextIter.shceduledAt
 			);
+			this.updatedCardsCount++;
+			if (this.updatedCardsCount > 10) {
+				this.updatedCardsCount = 0;
+				this.kvs.commit();
+			}
 			this.doNext();
 		});
 		container.appendChild(btn);
@@ -150,6 +161,6 @@ class QnAModal extends Modal {
 		const {contentEl} = this;
 		contentEl.empty();
 
-		await this.cardsDB.compactDB(this.vault.getMarkdownFiles().map(f => f.path));
+		await this.kvs.commit();
 	}
 }

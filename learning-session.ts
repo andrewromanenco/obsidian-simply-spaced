@@ -1,35 +1,35 @@
-import { CardsStorage } from 'cardsdb';
+import {KV} from 'kv-synced';
 import { TFile } from 'obsidian';
 
 export class LearningSession {
 
-    private cardsDB: CardsStorage;
+    private kvs: KV;
 
     private newCards: TFile[] = [];
     private todayAndLateCards: TFile[] = [];
     private todayCardsCount: number = 0;
     private lateCardsCount: number = 0;
 
-    public constructor(cardsDB: CardsStorage, allMDFiles: TFile[]) {
-        this.cardsDB = cardsDB;
+    public constructor(kvs: KV, allMDFiles: TFile[]) {
+        this.kvs = kvs;
         const today = new Date();
         today.setHours(0,0,0,0);
         const todayCards: TFile[] = [];
         const lateCards: TFile[] = [];
         allMDFiles.forEach(f => {
             const path = f.path;
-            if (this.cardsDB.isIgnored(path)) {
-                return;
-            }
-            if (this.cardsDB.doesCardExist(path)) {
-                const card = cardsDB.getCard(path);
-                if (card.scheduledAt!.getTime() == today.getTime()) {
+            if (this.kvs.get(path)) {
+                const values = this.kvs.get(path)!;
+                if (values['ignore']) {
+                    return;
+                }
+                const scheduledDate = new Date(values['scheduledAt']);
+                if (this.isToday(scheduledDate)) {
                     todayCards.push(f);
                     this.todayCardsCount++;
-                } else if (card.scheduledAt!.getTime() < today.getTime()) {
+                } else if (this.isInThePast(scheduledDate)) {
                     lateCards.push(f);
                     this.lateCardsCount++;
-                } else {
                 }
             } else {
                 this.newCards.push(f);
@@ -40,6 +40,19 @@ export class LearningSession {
         todayCards.sort(() => Math.random() - 0.5);
         this.todayAndLateCards.push(...lateCards);
         this.todayAndLateCards.push(...todayCards);
+    }
+
+    private isToday(date: Date): boolean {
+        const today = new Date();
+        
+        return date.getFullYear() === today.getFullYear() &&
+               date.getMonth() === today.getMonth() &&
+               date.getDate() === today.getDate();
+    }
+
+    private isInThePast(date: Date): boolean {
+        const now = new Date();
+        return date < now;
     }
 
     public hasMoreCards(): boolean {
@@ -55,44 +68,43 @@ export class LearningSession {
 
     public currentRepetitions(): number {
         const path = this.currentCard().path;
-        if (this.cardsDB.doesCardExist(path)) {
-            return this.cardsDB.getCard(path).repetiotions;
-        } else {
-            return 0;
+        if (this.kvs.get(path) && this.kvs.get(path)!['repetiotions']) {
+            return +this.kvs.get(path)!['repetiotions'];
         }
+        return 0;
     }
 
     public currentEasyFactor(): number {
         const path = this.currentCard().path;
-        if (this.cardsDB.doesCardExist(path)) {
-            return this.cardsDB.getCard(path).easyFactor;
-        } else {
-            return 2.5;
+        if (this.kvs.get(path) && this.kvs.get(path)!['easyFactor']) {
+            return +this.kvs.get(path)!['easyFactor'];
         }
+        return 2.5;
     }
 
     public currentInterval(): number {
         const path = this.currentCard().path;
-        if (this.cardsDB.doesCardExist(path)) {
-            return this.cardsDB.getCard(path).intervalInDays;
-        } else {
-            return 0;
+        if (this.kvs.get(path) && this.kvs.get(path)!['intervalInDays']) {
+            return +this.kvs.get(path)!['intervalInDays'];
         }
+        return 0;
     }
 
-    public updateCard(easyFactor: number, intervalInDays: number, repetiotions: number, shceduledAt: Date): void {
-        this.cardsDB.save({
-            path: this.currentCard().path,
-            repetiotions: repetiotions,
-            easyFactor: easyFactor,
-            scheduledAt: shceduledAt,
-            intervalInDays: intervalInDays
+    public updateCard(easyFactor: number, intervalInDays: number, repetiotions: number, scheduledAt: Date): void {
+        this.kvs.put(this.currentCard().path, {
+            "repetiotions": "" + repetiotions,
+            "easyFactor": "" + easyFactor,
+            "scheduledAt": "" + scheduledAt.toISOString(),
+            "intervalInDays": ""+ intervalInDays
+
         });
         this.moveToNextCard();
     }
 
     public ignoreCard(): void {
-        this.cardsDB.ignore(this.currentCard().path);
+        this.kvs.put(this.currentCard().path, {
+            "ignore": "true"
+        });
         this.moveToNextCard();
     }
 
