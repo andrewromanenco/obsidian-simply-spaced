@@ -112,6 +112,14 @@ export class LearningSession {
         this.moveToNextCard();
     }
 
+    public punt(toDate:Date): void {
+        this.kvs.put(this.currentCard().path, {
+            "scheduledAt": toDate.toISOString(),
+
+        });
+        this.moveToNextCard();
+    }
+
     private moveToNextCard(): void {
         if (this.todayAndLateCards.length > 0) {
             this.todayAndLateCards.shift();

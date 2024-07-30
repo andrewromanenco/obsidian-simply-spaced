@@ -1,7 +1,7 @@
 import { App, Modal, Plugin, MarkdownRenderer, Component, Vault } from 'obsidian';
 
 import { KV, LWWVersionHandler } from 'kv-synced';
-import { getNextInterval, Answer } from 'spacer';
+import { getNextInterval, createDateWithInterval, Answer } from 'spacer';
 import { LearningSession } from 'learning-session';
 
 import { ObsidianFS } from 'obsidian-fs';
@@ -98,6 +98,21 @@ class QnAModal extends Modal {
 				this.parentComponent);
 		});
 		questionControlDiv.appendChild(showAnswerBtn);
+
+		const punt3Btn = document.createElement("button");
+		punt3Btn.setText("Punt 3");
+		punt3Btn.addEventListener("click", () => {
+			this.learningSession.punt(createDateWithInterval(3));
+			this.doNext();
+		});
+		answerControlDiv.appendChild(punt3Btn);
+		const punt5Btn = document.createElement("button");
+		punt5Btn.setText("Punt 5");
+		punt5Btn.addEventListener("click", () => {
+			this.learningSession.punt(createDateWithInterval(5));
+			this.doNext();
+		});
+		answerControlDiv.appendChild(punt5Btn);
 
 
 		const notThisSessionBtn = document.createElement("button");
