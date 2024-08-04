@@ -51,6 +51,10 @@ export class ObsidianFS implements CloudDrive {
         }
     }
 
+    async delete(fileHandle: any): Promise<void> {
+        await this.vault.delete(fileHandle);
+    }
+
     private async sha256(message: string): Promise<string> {
         const encoder = new TextEncoder();
         const data = encoder.encode(message);
